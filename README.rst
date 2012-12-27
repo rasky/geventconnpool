@@ -25,14 +25,14 @@ or easy_install::
 You need to derive from ``ConnectionPool`` and reimplement ``_new_connection``,
 to specify how to open a connection to the remove site. For instance:
 
-```python
+.. code-block:: python
+
     from geventconnpool import ConnectionPool
     from gevent import socket
 
     class MyPool(ConnectionPool):
         def _new_connection(self):
             return socket.create_connection(('test.example.org', 2485))
-```
 
 In this case, we're simply opening a TCP connection to a specified peer.
 
@@ -62,7 +62,7 @@ Automatic retrying
 ==================
 If you want to be resilent to temporary network errors, you can use the ``retry``
 decorator that will re-execute the function if it is quit with a ``socket.error``
-exception::
+exception:
 
 ```python
     from geventconnpool import retry
@@ -84,7 +84,7 @@ Advanced connection examples
 When implement a connection pool, it is advisable to perform all the
 initialization phases of the application protocol within the ``_new_connection``
 callback. For instance, a protocol might allow to switch to TLS
-(with a STARTTLS-like) and then require authentication::
+(with a STARTTLS-like) and then require authentication:
 
 ```python
     from geventconnpool import ConnectionPool
