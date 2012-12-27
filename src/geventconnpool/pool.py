@@ -1,5 +1,6 @@
 import gevent
 from gevent.coros import BoundedSemaphore
+from gevent import socket
 from collections import deque
 from contextlib import contextmanager
 from functools import wraps
@@ -105,6 +106,6 @@ def retry(f):
         while 1:
             try:
                 return f(*args, **kwargs)
-            except (socket.error, ssl.SSLError):
+            except socket.error:
                 continue
     return deco
