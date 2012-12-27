@@ -39,19 +39,19 @@ In this case, we're simply opening a TCP connection to a specified peer.
 The pool can be istantiated by specifying how many connections we want to
 keep open at the same time:
 
-```python
+.. code-block:: python
+
     pool = MyPool(20)  # always keep 20 connections open
-```
 
 
 To access a connection within the pool:
 
-```python
+.. code-block:: python
+
     with pool.get() as c:
         c.send("PING\n")
         if c.recv(5) != "PONG\n":
             raise socket.error("something awful happened")
-```
 
 If the context is quit through a ``socket.error`` exception, the connection is
 discarded and a new open is opened in background, to keep the pool always full
@@ -64,7 +64,8 @@ If you want to be resilent to temporary network errors, you can use the ``retry`
 decorator that will re-execute the function if it is quit with a ``socket.error``
 exception:
 
-```python
+.. code-block:: python
+
     from geventconnpool import retry
 
     @retry
@@ -73,7 +74,6 @@ exception:
             c.send(data)
             if c.recv(2) != "OK":
                 raise socket.error("something awful happened")
-```
 
 Since the pool discards the connections when a ``1`` exception is
 generated, the net effect of `retry` is that a different connection will be
@@ -86,7 +86,8 @@ initialization phases of the application protocol within the ``_new_connection``
 callback. For instance, a protocol might allow to switch to TLS
 (with a STARTTLS-like) and then require authentication:
 
-```python
+.. code-block:: python
+
     from geventconnpool import ConnectionPool
     from gevent import socket, ssl
 
@@ -108,7 +109,6 @@ callback. For instance, a protocol might allow to switch to TLS
             if res != "OK":
                 raise socket.error("authentication failed")
             return s
-```
 
 As you can see, it is possible to simply raise ``socket.error`` if something
 went wrong. The pool is resistant to temporary connection errors and will retry
@@ -118,7 +118,8 @@ Another common situation might involve the usage of third-party libraries like f
 instance using `boto <http://docs.pythonboto.org/en/latest/>`_ to connect to
 Amazon AWS:
 
-```python
+.. code-block:: python
+
     from geventconnpool import ConnectionPool
     import boto
     from boto.exception import NoAuthHanlder
@@ -130,7 +131,6 @@ Amazon AWS:
                 return c.get_table("users")
             except:
                 raise socket.error("error connecting to AWS")
-```
 
 In this case, we don't only connect to AWS and authenticate, but we also open
 a specific table and return a reference to that table. In fact, it is not
@@ -138,7 +138,9 @@ necessary for the return value of ``_new_connection()`` to be a socket (or
 socket-like): ``ConnectionPool`` treats it as a black.box and return it when
 ``get`` is called.
 
-.. note:: boto has an internal connection pool, but it is only used to be
+.. note::
+
+   boto has an internal connection pool, but it is only used to be
    fully-thread safe, and does not preemptively open the connections,
    authenticate, and perform initialization. This means that it still makes
    sense to use ``ConnectionPool`` to minimize the latency when communicating
@@ -154,7 +156,8 @@ load-balancer might close a connection if it is idle for too long.
 Sometimes, it is sufficient to rely on the standard TCP-level keeaplive, that
 can be turned on any TCP socket:
 
-```python
+.. code-block:: python
+
     from geventconnpool import ConnectionPool
     from gevent import socket
 
@@ -163,7 +166,6 @@ can be turned on any TCP socket:
             s = socket.create_connection(('test.example.org', 2485))
             s._sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
             return s
-```
 
 The TCP keepalive uses ACK packets to continously communicating with the remote
 peer. To tune the keepalive parameters (delay between ACKs, number of unanswered
@@ -174,7 +176,8 @@ Alternatively, it is possible to implement an application-level keepalive
 by implemening the ``_keepalive`` method and specifying the keepalive frequency
 in the constructor:
 
-```python
+.. code-block:: python
+
     from geventconnpool import ConnectionPool
     from gevent import socket
 
@@ -188,11 +191,9 @@ in the constructor:
                 raise socket.error
 
     pool = MyPool(20, keepalive=30)
-```
 
 The above code uses a keepalive based on an application-level command (PING),
 and specifies that it should be executed every 30 seconds (per each connection).
 
 ``_keepalive`` should raise ``socket.error`` to communicate that the connection
 appears to be broken and should be discarded by the pool.
-
