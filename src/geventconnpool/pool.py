@@ -27,7 +27,8 @@ class ConnectionPool(object):
             self.lock.acquire()
         for i in xrange(size):
             gevent.spawn_later(self.SPAWN_FREQUENCY*i, self._addOne)
-        gevent.spawn(self._keepalive_periodic)
+        if self.keepalive:
+            gevent.spawn(self._keepalive_periodic)
 
     def _new_connection(self):
         """
