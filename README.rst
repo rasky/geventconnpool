@@ -139,10 +139,10 @@ socket-like): ``ConnectionPool`` treats it as a black.box and return it when
 ``get`` is called.
 
 .. note:: boto has an internal connection pool, but it is only used to be
-fully-thread safe, and does not preemptively open the connections,
-authenticate, and perform initialization. This means that it still makes
-sense to use ``ConnectionPool`` to minimize the latency when communicating
-to AWS.
+    fully-thread safe, and does not preemptively open the connections,
+    authenticate, and perform initialization. This means that it still makes
+    sense to use ``ConnectionPool`` to minimize the latency when communicating
+    to AWS.
 
 Keepalive
 =========
