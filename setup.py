@@ -1,9 +1,13 @@
 from distutils.core import setup
 from setuptools import find_packages
 
+with open('README.rst') as file:
+    long_description = file.read()
+
 setup(name='geventconnpool',
-    version = "0.1",
+    version = "0.1a",
     description = 'TCP connection pool for gevent',
+    long_description = long_description,
     url="https://github.com/rasky/geventconnpool",
     author="Giovanni Bajo",
     author_email="rasky@develer.com",
