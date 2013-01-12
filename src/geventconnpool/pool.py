@@ -50,7 +50,7 @@ class ConnectionPool(object):
         while 1:
             try:
                 with self.get() as c:
-                    self._keepalive()
+                    self._keepalive(c)
             except socket.error:
                 # Nothing to do, the pool will generate a new connection later
                 pass
