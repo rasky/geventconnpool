@@ -5,7 +5,7 @@ with open('README.rst') as file:
     long_description = file.read()
 
 setup(name='geventconnpool',
-    version = "0.1b",
+    version = "0.2",
     description = 'TCP connection pool for gevent',
     long_description = long_description,
     url="https://github.com/rasky/geventconnpool",
