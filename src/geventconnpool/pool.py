@@ -5,7 +5,8 @@ from collections import deque
 from contextlib import contextmanager
 from functools import wraps
 
-__all__ = [ "ConnectionPool", "retry" ]
+__all__ = ["ConnectionPool", "retry"]
+
 
 class ConnectionPool(object):
     """
