@@ -58,6 +58,14 @@ discarded and a new open is opened in background, to keep the pool always full
 of valid connections. Any other exception does not have a special meaning, and
 the connection will be reinserted into the pool to be reused later.
 
+If your application/library uses exceptions that do not derive from
+``socket.error`` to signify connection errors (``imaplib`` is one example),
+you can override which exceptions are treated as triggering discards:
+
+.. code-block:: python
+
+    pool = MyPool(20, exc_classes=(socket.error, imaplib.IMAP4.error))
+
 Automatic retrying
 ==================
 If you want to be resilent to temporary network errors, you can use the ``retry``
@@ -75,9 +83,32 @@ exception:
             if c.recv(2) != "OK":
                 raise socket.error("something awful happened")
 
-Since the pool discards the connections when a ``1`` exception is
+Since the pool discards the connections when a ``socket.error`` exception is
 generated, the net effect of `retry` is that a different connection will be
 used for each attempt.
+
+The ``retry`` decorator has some extra features which are disabled by default.
+If you pass it a logger, it will log each attempt. You can also specify a
+maximum number of attempts, an interval to wait between successive attempts,
+and which specific exception classes to trigger retries on. Log messages and
+levels are customizable.
+
+.. code-block:: python
+
+    import logging
+    logging.basicConfig()
+    log = logging.getLogger()
+
+    from geventconnpool import retry
+
+    @retry(exc_classes=(socket.error, imaplib.IMAP4.error), logger=log,
+           max_failures=5, interval=2)
+    def senddata(data):
+        with pool.get() as c:
+            typ, data = c.select('INBOX')
+
+If you wish to codify a set of options to ``retry`` into your code, consider
+using ``functools.partial``.
 
 Advanced connection examples
 ============================
