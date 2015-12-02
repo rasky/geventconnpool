@@ -1,15 +1,15 @@
 import logging
+from functools import wraps
+from contextlib import contextmanager
+from collections import deque
 
 import gevent
-from gevent.coros import BoundedSemaphore
 from gevent import socket
-from collections import deque
-from contextlib import contextmanager
-from functools import wraps
+from gevent.coros import BoundedSemaphore
 
 __all__ = ["ConnectionPool", "retry"]
 
-DEFAULT_EXC_CLASSES = (socket.error,)
+DEFAULT_EXC_CLASSES = (socket.error, )
 
 
 class ConnectionPool(object):
@@ -24,8 +24,11 @@ class ConnectionPool(object):
     SPAWN_FREQUENCY = 0.1
 
     def __init__(self, size, exc_classes=DEFAULT_EXC_CLASSES, keepalive=None):
+        """
+        :param exc_classes: tuple, exceptions which connection should be dropped when it raises
+        """
         self.size = size
-        self.conn = deque()
+        self.connections = deque()
         self.lock = BoundedSemaphore(size)
         self.keepalive = keepalive
         # Exceptions list must be in tuple form to be caught properly
@@ -72,7 +75,7 @@ class ConnectionPool(object):
                 interval *= 2
             conn = self._new_connection()
 
-        self.conn.append(conn)
+        self.connections.append(conn)
         self.lock.release()
 
     @contextmanager
@@ -85,21 +88,21 @@ class ConnectionPool(object):
         retry whatever operation you were performing.
         """
         self.lock.acquire()
-        conn = self.conn.popleft()
+        conn = self.connections.popleft()
         try:
             yield conn
         except self.exc_classes:
             # The current connection has failed, drop it and create a new one
-            gevent.spawn_later(1, self._add_one)
+            gevent.spawn_later(self.SPAWN_FREQUENCY, self._add_one)
             raise
         except:
-            self.conn.append(conn)
+            self.connections.append(conn)
             self.lock.release()
             raise
         else:
             # NOTE: cannot use finally because MUST NOT reuse the connection
             # if it failed (socket.error)
-            self.conn.append(conn)
+            self.connections.append(conn)
             self.lock.release()
 
 
