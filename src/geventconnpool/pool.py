@@ -30,6 +30,11 @@ class ConnectionPool(object):
         self.keepalive = keepalive
         # Exceptions list must be in tuple form to be caught properly
         self.exc_classes = tuple(exc_classes)
+        # http://stackoverflow.com/a/31136897/357578
+        try:
+            xrange
+        except NameError:
+            xrange = range
         for i in xrange(size):
             self.lock.acquire()
         for i in xrange(size):
