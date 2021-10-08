@@ -1,7 +1,7 @@
 import logging
 
 import gevent
-from gevent.coros import BoundedSemaphore
+from gevent.lock import BoundedSemaphore
 from gevent import socket
 from collections import deque
 from contextlib import contextmanager
